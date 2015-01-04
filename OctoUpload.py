@@ -15,6 +15,8 @@
 
 version = "0.1"
 import re
+import requests
+import json
 
 #prints user's input
 print hostIP + ":" + octoPort
@@ -34,3 +36,14 @@ with open(filename, "r") as f:
     file.close()
 
     #print gcode
+
+url = "http://" + hostIP + "/api/files/local"
+headers = {"content-type" : "form-data"}
+#headers = {"content-type" : "multipart/form-data"}
+X-Api-Key = apiKey
+payload = "path to gcode"
+files = {'file': open(outputName + ".gcode", 'rb')}
+
+r = requests.post(url, headers=headers, files=files)
+r = requests.get
+print r.starus_code
