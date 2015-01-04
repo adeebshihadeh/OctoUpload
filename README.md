@@ -7,4 +7,4 @@ Installation
 ==========
 Add to Cura as a plugin:
 
-Plugins -> Open Plugin Location -> Drag OctoUpload into plugin location
+Plugins -> Open Plugin Location -> Drag OctoUpload.py into plugin location
