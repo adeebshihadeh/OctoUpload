@@ -7,6 +7,7 @@
 #Param: apiKey(string:) API Key
 #Param: outputName(string:output) Output Filename
 #Param: sendLoc(string:local) OctoPrint Location (local or sdcard)
+#Param: gcodeExt(string:gcode) GCode Extension
 ##Param: autoPrint(string:no) Print on upload (yes/no)
 
 # todo
@@ -30,13 +31,30 @@ print octoPort
 print apiKey
 print outputName
 print sendLoc
+print gcodeExt
 
-if outputName.split('.').pop() != 'gcode':
-  outputName += '.gcode'
+#remove extension user may have used on the filename
+outputName = outputName.split(".")[0]
+print outputName
+
+#remove . user may have used on extension
+if gcodeExt.find(".") != -1:
+    gcodeExt = gcodeExt.split(".")[1]
+    print gcodeExt
+
+#add extension user specifies
+if gcodeExt == "g":
+    outputName = outputName + "." + gcodeExt
+elif gcodeExt == "gco":
+    outputName = outputName + "." + gcodeExt
+else:
+    outputName = outputName + ".gcode"
+print "Ext: " + outputName
 
 username = "spec"
 password = "password"
 
+#sends the gcode to either sd or local
 if sendLoc == "sdcard":
     url = "http://" + hostIP + ":" + octoPort + "/api/files/sdcard"
 else:
