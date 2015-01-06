@@ -10,7 +10,7 @@
 #Param: gcodeExt(string:gcode) GCode Extension
 #Param: sslBool(string:no) SSL (yes/no)
 #Param: selectBool(string:yes) Select once uploaded (yes/no)
-##Param: autoPrint(string:no) Print on upload (yes/no)
+#Param: printBool(string:no) Print after upload (yes/no)
 
 # todo
 # 1. Automatically figure out a default filename based on first STL loaded
@@ -72,10 +72,15 @@ if sendLoc == "sdcard":
 else:
     url = protocol + hostIP + ":" + octoPort + "/api/files/local"
 
-#makes sure user submits a valid option
+#makes sure user submits a valid option for selecting
 if selectBool != ("yes" or "no"):
     selectBool = "no"
-print selectBool
+print "Select: " + selectBool
+
+#makes sure user submits a valid option for printing
+if printBool != ("yes" or "no"):
+    printBool = "no"
+print "Print: " + selectBool
 
 filebody = open(filename, 'rb').read()
 mimetype = 'application/octet-stream'
@@ -93,6 +98,10 @@ body = [  body_boundary,
           'Content-Disposition: form-data; name="select"',
           '',
           selectBool,
+          '--' + boundary,
+          'Content-Disposition: form-data; name="print"',
+          '',
+          printBool,
       ]
 
 body.append('--' + boundary + '--')
