@@ -8,6 +8,7 @@
 #Param: outputName(string:output) Output Filename
 #Param: sendLoc(string:local) OctoPrint Location (local or sdcard)
 #Param: gcodeExt(string:gcode) GCode Extension
+#Param: sslBool(string:no) SSL (yes/no)
 ##Param: autoPrint(string:no) Print on upload (yes/no)
 
 # todo
@@ -32,6 +33,7 @@ print apiKey
 print outputName
 print sendLoc
 print gcodeExt
+print sslBool
 
 #remove extension user may have used on the filename
 outputName = outputName.split(".")[0]
@@ -54,11 +56,17 @@ print "Ext: " + outputName
 username = "spec"
 password = "password"
 
+#allows for SSL if user specifies
+if sslBool == "yes":
+    protocol = "https://"
+else:
+    protocol = "http://"
+
 #sends the gcode to either sd or local
 if sendLoc == "sdcard":
-    url = "http://" + hostIP + ":" + octoPort + "/api/files/sdcard"
+    url = protocol + hostIP + ":" + octoPort + "/api/files/sdcard"
 else:
-    url = "http://" + hostIP + ":" + octoPort + "/api/files/local"
+    url = protocol + hostIP + ":" + octoPort + "/api/files/local"
 
 filebody = open(filename, 'rb').read()
 mimetype = 'application/octet-stream'
