@@ -6,6 +6,7 @@
 #Param: octoPort(string:80) Port
 #Param: apiKey(string:) API Key
 #Param: outputName(string:output) Output Filename
+#Param: sendLoc(string:local) OctoPrint Location (local or sdcard)
 ##Param: autoPrint(string:no) Print on upload (yes/no)
 
 # todo
@@ -28,6 +29,7 @@ print hostIP
 print octoPort
 print apiKey
 print outputName
+print sendLoc
 
 if outputName.split('.').pop() != 'gcode':
   outputName += '.gcode'
@@ -35,8 +37,10 @@ if outputName.split('.').pop() != 'gcode':
 username = "spec"
 password = "password"
 
-url = "http://" + hostIP + ":" + octoPort + "/api/files/local"
-
+if sendLoc == "sdcard":
+    url = "http://" + hostIP + ":" + octoPort + "/api/files/sdcard"
+else:
+    url = "http://" + hostIP + ":" + octoPort + "/api/files/local"
 
 filebody = open(filename, 'rb').read()
 mimetype = 'application/octet-stream'
@@ -68,4 +72,4 @@ req.add_data(body)
 
 print "Uploading..."
 print urllib2.urlopen(req).read()
-print "done :)"
+print "Done"
