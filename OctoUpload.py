@@ -1,99 +1,71 @@
 #Name: OctoUpload
-#Info: Uploads gcode to OctoPrint server after slicing (All fields required)
+#Info: Uploads gcode to OctoPrint server after slicing
 #Depend: GCode
 #Type: postprocess
-#Param: hostIP(string:octopi.local) IP Address
-#Param: hostPort(string:80) Port
-#Param: apiKey(string:156A8AE4000940CFB3C51C9DFD812D8A) API Key
+#Param: hostIP(string:) IP Address
+#Param: octoPort(string:80) Port
+#Param: apiKey(string:) API Key
 #Param: outputName(string:output) Output Filename
 ##Param: autoPrint(string:no) Print on upload (yes/no)
 
-#todo
-#connect & upload to octo
-#option for autostart print
-#option to not upload during real time slicing
-#option for different variations of gcode (.gcode, .gco, .g)
-#get model name & set as output
+# todo
+# 1. Automatically figure out a default filename based on first STL loaded
+# 2. Create a checkmark for SSL vs Non-SSL
+# 3. Optional Settings (ideally a expand/hidey thing) for octoPort, outputName (Optional because See #1), and basic auth username/password
 
 version = "0.1"
 
-import cookielib
+import base64
 import socket
 import urllib
 import urllib2
-import json
+import mimetools
 
-myGcode = outputName
-myKey = apiKey
-
-#prints user's input
-print "IP: " + hostIP + ":" + hostPort
-print "API key: " + apiKey
-print "Filename: " + myGcode + ".gcode"
-#print autoPrint
-
-#makes a copy of the gcode to send to OctoPrint
-with open(filename, "r") as f:
-
-    file = open(myGcode + ".gcode", "w")
-
-    gcode = f.readlines()
-
-    file.writelines(gcode)
-
-    file.close()
-
-    #print gcode
-
-#this is for urlib2
-url = "http://" + hostIP + ":" + hostPort + "/api/files/local"
-print "URL: " + url
-
-http_header = {
-                #"User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36",
-                #"Host" : hostIP,
-                #"Accept" : "application/json, text/javascript,*/*;q=0.01",
-                #"Accept-Encoding" : "gzip, deflate",
-                #"X-Requested-With" : "XMLHttpRequest",
-                #"Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryDeC2E3iWbTv1PwMC",
-                #"Content-Type" : "multipart/form-data",
-                "Content-Type" : "form-data",
-                "X-Api-Key" : myKey
-                }
-payload = {
-    "Content-Disposition" : "form-data; name='file'; filename='output.gcode'",
-    "Content-Type" : "application/octet-stream",
-    'file': open(myGcode + ".gcode", 'rb').readlines()
-}
-
-files = {
-    'file': open(myGcode + ".gcode", 'rb'),
-    "filename" : "octoupload" + ".gcode"
-}
-
-# setup socket connection timeout
 timeout = 15
 socket.setdefaulttimeout(timeout)
 
-# create an urllib2 opener()
-opener = urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
+print hostIP
+print octoPort
+print apiKey
+print outputName
 
-# create your HTTP request
-req = urllib2.Request(url, urllib.urlencode(payload), http_header)
-print req
+if outputName.split('.').pop() != 'gcode':
+  outputName += '.gcode'
+
+username = "spec"
+password = "password"
+
+url = "http://" + hostIP + ":" + octoPort + "/api/files/local"
+
+
+filebody = open(filename, 'rb').read()
+mimetype = 'application/octet-stream'
+boundary = mimetools.choose_boundary()
+content_type = 'multipart/form-data; boundary=%s' % boundary
+
+body = []
+body_boundary = '--' + boundary
+body = [  body_boundary,
+          'Content-Disposition: form-data; name="file"; filename="%s"' % outputName,
+          'Content-Type: %s' % mimetype,
+          '',
+          filebody,
+      ]
+
+body.append('--' + boundary + '--')
+body.append('')
+body = '\r\n'.join(body)
+
+req = urllib2.Request(url)
+# Uncomment below two lines for basic auth support. (Used in cases where haproxy is in front of octoprint, with basic auth enabled).
+#base64string = base64.encodestring('%s:%s' % (username, password))
+#req.add_header("Authorization", "Basic %s" % base64string)
+req.add_header('User-agent', 'Cura AutoUploader Plugin')
+req.add_header('Content-type', content_type)
+req.add_header('Content-length', len(body))
+req.add_header('X-Api-Key', apiKey)
+req.add_data(body)
+
 print "Uploading..."
-
-# submit your request
-#res = opener.open(req)
-feeddata = opener.open(req).read()
-# html = res.read()
-# print html
-# response = urllib2.urlopen(req)
-#
-# print "Response: " + response
-
-# save retrieved HTML to file
-# open("tmp.html", "w").write(html)
-# print "HTML" + html
-
-print "done"
+print urllib2.urlopen(req).read()
+print "done :)"
