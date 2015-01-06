@@ -2,13 +2,14 @@
 #Info: Uploads gcode to OctoPrint server after slicing
 #Depend: GCode
 #Type: postprocess
-#Param: hostIP(string:) IP Address
+#Param: hostIP(string:octopi.local) IP Address
 #Param: octoPort(string:80) Port
 #Param: apiKey(string:) API Key
 #Param: outputName(string:output) Output Filename
 #Param: sendLoc(string:local) OctoPrint Location (local or sdcard)
 #Param: gcodeExt(string:gcode) GCode Extension
 #Param: sslBool(string:no) SSL (yes/no)
+#Param: selectBool(string:yes) Select once uploaded (yes/no)
 ##Param: autoPrint(string:no) Print on upload (yes/no)
 
 # todo
@@ -34,6 +35,7 @@ print outputName
 print sendLoc
 print gcodeExt
 print sslBool
+print selectBool
 
 #remove extension user may have used on the filename
 outputName = outputName.split(".")[0]
@@ -53,8 +55,10 @@ else:
     outputName = outputName + ".gcode"
 print "Ext: " + outputName
 
+
 username = "spec"
 password = "password"
+
 
 #allows for SSL if user specifies
 if sslBool == "yes":
@@ -68,6 +72,11 @@ if sendLoc == "sdcard":
 else:
     url = protocol + hostIP + ":" + octoPort + "/api/files/local"
 
+#makes sure user submits a valid option
+if selectBool != ("yes" or "no"):
+    selectBool = "no"
+print selectBool
+
 filebody = open(filename, 'rb').read()
 mimetype = 'application/octet-stream'
 boundary = mimetools.choose_boundary()
@@ -80,6 +89,10 @@ body = [  body_boundary,
           'Content-Type: %s' % mimetype,
           '',
           filebody,
+          '--' + boundary,
+          'Content-Disposition: form-data; name="select"',
+          '',
+          selectBool,
       ]
 
 body.append('--' + boundary + '--')
