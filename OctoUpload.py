@@ -2,6 +2,7 @@
 #Info: Uploads gcode to OctoPrint server after slicing
 #Depend: GCode
 #Type: postprocess
+#Param: uploadBool(string:yes) Upload gcode after slice
 #Param: hostIP(string:octopi.local) IP Address
 #Param: octoPort(string:80) Port
 #Param: apiKey(string:) API Key
@@ -24,10 +25,12 @@ import socket
 import urllib
 import urllib2
 import mimetools
+import sys
 
 timeout = 15
 socket.setdefaulttimeout(timeout)
 
+print uploadBool
 print hostIP
 print octoPort
 print apiKey
@@ -36,6 +39,11 @@ print sendLoc
 print gcodeExt
 print sslBool
 print selectBool
+
+#skip upload if not enabled
+if uploadBool != "yes":
+  print "Not uploading so exiting"
+  sys.exit()
 
 #remove extension user may have used on the filename
 outputName = outputName.split(".")[0]
