@@ -90,6 +90,23 @@ if printBool != ("yes" or "no"):
     printBool = "no"
 print "Print: " + selectBool
 
+if "darwin" == sys.platform:
+    # Monkey path socket.sendall to handle EAGAIN (Errno 35) on mac.
+    # (https://github.com/shazow/urllib3/issues/63)
+    import socket
+    import time
+    def socket_socket_sendall(self, data):
+        while len(data) > 0:
+            try:
+                bytes_sent = self.send(data)
+                data = data[bytes_sent:]
+            except socket.error, e:
+                if str(e) == "[Errno 35] Resource temporarily unavailable":
+                    time.sleep(0.1)
+                else:
+                    raise e
+    socket._socketobject.sendall = socket_socket_sendall
+
 filebody = open(filename, 'rb').read()
 mimetype = 'application/octet-stream'
 boundary = mimetools.choose_boundary()
