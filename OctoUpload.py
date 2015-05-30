@@ -88,7 +88,7 @@ print "Select: " + selectBool
 #makes sure user submits a valid option for printing
 if printBool != ("yes" or "no"):
     printBool = "no"
-print "Print: " + selectBool
+print "Print: " + printBool
 
 if "darwin" == sys.platform:
     # Monkey path socket.sendall to handle EAGAIN (Errno 35) on mac.
